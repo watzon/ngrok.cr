@@ -34,9 +34,9 @@ class Ngrok
   @ngrok_url_https : String? = nil
   @status : Symbol = :stopped
 
-  getter :params
+  getter :params, :ngrok_url, :ngrok_url_https, :status
 
-  protected property :process, :ngrok_url, :ngrok_url_https, :status
+  protected setter :process, :ngrok_url, :ngrok_url_https, :status
 
   def initialize(params = nil)
     @params = params ? DEFAULTS.merge(params) : DEFAULTS
@@ -55,6 +55,12 @@ class Ngrok
 
     ngrok.status = :running
     ngrok.fetch_urls
+    ngrok
+  end
+
+  def self.start(params = nil, &block)
+    ngrok = self.start(params)
+    yield(ngrok)
   end
 
   def stop
