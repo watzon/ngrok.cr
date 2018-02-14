@@ -9,7 +9,7 @@ Add this to your application's `shard.yml`:
 ```yaml
 dependencies:
   ngrok:
-    github: watzon/ngrok
+    github: watzon/ngrok.cr
 ```
 
 ## Usage
@@ -56,7 +56,7 @@ Ngrok.start(addr: 'foo.dev:80',
 
 ## Contributing
 
-1. Fork it ( https://github.com/watzon/ngrok/fork )
+1. Fork it ( https://github.com/watzon/ngrok.cr/fork )
 2. Create your feature branch (git checkout -b my-new-feature)
 3. Commit your changes (git commit -am 'Add some feature')
 4. Push to the branch (git push origin my-new-feature)
