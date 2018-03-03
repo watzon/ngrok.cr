@@ -3,20 +3,19 @@ require "tempfile"
 
 class Ngrok
   class Downloader
-
-    CDN_URL = "https://bin.equinox.io"
-    CDN_PATH = "c/4VmDzA7iaHb/ngrok-stable"
+    CDN_URL        = "https://bin.equinox.io"
+    CDN_PATH       = "c/4VmDzA7iaHb/ngrok-stable"
     DOWNLOAD_FILES = {
-      "darwinia32" => "darwin-386.zip",
-      "darwinx64" => "darwin-amd64.zip",
-      "linuxarm" => "linux-arm.zip",
-      "linuxarm64" => "linux-arm64.zip",
-      "linuxia32" => "linux-386.zip",
-      "linuxx64" => "linux-amd64.zip",
-      "win32" => "windows-386.zip",
-      "win64" => "windows-amd64.zip",
-      "freebsdx64" => "freebsd-amd64.zip",
-      "freebsdia32" => "freebsd-386.zip"
+      "darwinia32"  => "darwin-386.zip",
+      "darwinx64"   => "darwin-amd64.zip",
+      "linuxarm"    => "linux-arm.zip",
+      "linuxarm64"  => "linux-arm64.zip",
+      "linuxia32"   => "linux-386.zip",
+      "linuxx64"    => "linux-amd64.zip",
+      "win32"       => "windows-386.zip",
+      "win64"       => "windows-amd64.zip",
+      "freebsdx64"  => "freebsd-amd64.zip",
+      "freebsdia32" => "freebsd-386.zip",
     }
 
     def initialize(@cdn_url = CDN_URL, @cdn_path = CDN_PATH, @bin_path = "./bin")
@@ -25,11 +24,11 @@ class Ngrok
 
     def binary_path
       ext = case current_platform
-      when .includes?("win")
-        ".exe"
-      else
-        ""
-      end
+            when .includes?("win")
+              ".exe"
+            else
+              ""
+            end
 
       File.join(@bin_path, "ngrok" + ext)
     end
@@ -92,6 +91,5 @@ class Ngrok
         raise "Unsupported platform"
       {% end %}
     end
-
   end
 end

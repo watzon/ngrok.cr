@@ -3,18 +3,17 @@ require "./core_extensions/*"
 require "./ngrok/*"
 
 class Ngrok
-
   DEFAULTS = {
-    addr: "127.0.0.1:3001",
-    subdomain: nil,
-    hostname: nil,
-    authtoken: nil,
-    timeout: 10,
-    inspect: false,
-    log: IO::Memory.new,
-    config: nil,
+    addr:                 "127.0.0.1:3001",
+    subdomain:            nil,
+    hostname:             nil,
+    authtoken:            nil,
+    timeout:              10,
+    inspect:              false,
+    log:                  IO::Memory.new,
+    config:               nil,
     use_local_executable: true,
-    ngrok_bin: "./bin"
+    ngrok_bin:            "./bin",
   }
 
   @params : NamedTuple(
@@ -152,5 +151,4 @@ class Ngrok
     downloader.download!
     downloader.binary_path
   end
-
 end
