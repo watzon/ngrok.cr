@@ -1,5 +1,7 @@
 # Ngrok
 
+[![Travis](https://img.shields.io/travis/watzon/ngrok.cr.svg)](https://travis.org/watzon/ngrok.cr) ![Dependencies](https://shards.rocks/badge/github/veelenga/ameba/status.svg) ![license](https://img.shields.io/github/license/watzon/ngrok.cr.svg)
+
 Crystal wrapper for ngrok. This library does not require ngrok be installed as it includes a downloaded which will go and fetch the version of ngrok for your system and save it locally. If you do have ngrok installed it will use the installed version.
 
 ## Installation
