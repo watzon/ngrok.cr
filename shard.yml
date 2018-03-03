@@ -6,4 +6,9 @@ authors:
 
 crystal: 0.24.1
 
+development_dependencies:
+  spec2:
+    github: watzon/spec2.cr
+    branch: master
+
 license: MIT

@@ -65,6 +65,7 @@ class Ngrok
   def stop
     if running? && @process
       @process.not_nil!.kill(Signal::KILL)
+      @status = :stopped
     end
     @status
   end

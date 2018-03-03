@@ -1,6 +1,6 @@
 # Ngrok
 
-Crystal wrapper for Ngrok
+Crystal wrapper for ngrok. This library does not require ngrok be installed as it includes a downloaded which will go and fetch the version of ngrok for your system and save it locally. If you do have ngrok installed it will use the installed version.
 
 ## Installation
 
@@ -53,6 +53,10 @@ Ngrok.start(addr: 'foo.dev:80',
             log: File.open("./log.txt", "w"),
             config: '~/.ngrok')
 ```
+
+## Usage Examples
+
+See the `examples` directory for a couple usage examples.
 
 ## Contributing
 
