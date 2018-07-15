@@ -46,7 +46,8 @@ class Ngrok
         Zip::File.open(tempfile.path) do |zip|
           zip.extract_all(@bin_path, 0x7777)
         end
-        tempfile.unlink
+        # tempfile.unlink # crystal 0.24
+        tempfile.delete # crystal 0.25
       end
     end
 
