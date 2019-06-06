@@ -1,4 +1,2 @@
-require "spec2"
+require "spec"
 require "../src/ngrok"
-
-include Spec2::GlobalDSL

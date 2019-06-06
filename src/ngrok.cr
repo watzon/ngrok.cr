@@ -1,4 +1,3 @@
-require "tempfile"
 require "./core_extensions/*"
 require "./ngrok/*"
 

@@ -1,5 +1,4 @@
 require "http/client"
-require "tempfile"
 
 class Ngrok
   class Downloader
@@ -40,14 +39,13 @@ class Ngrok
 
       HTTP::Client.get(url) do |response|
         response.consume_body_io
-        tempfile = Tempfile.open("ngrok-#{current_platform}", ".zip") do |file|
+        tempfile = File.tempfile("ngrok-#{current_platform}", ".zip") do |file|
           file.puts response.body
         end
         Zip::File.open(tempfile.path) do |zip|
           zip.extract_all(@bin_path, 0x7777)
         end
-        # tempfile.unlink # crystal 0.24
-        tempfile.delete # crystal 0.25
+        tempfile.delete
       end
     end
 
