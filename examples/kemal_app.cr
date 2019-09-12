@@ -17,6 +17,6 @@ Ngrok.start({addr: "127.0.0.1:3400"}) do |ngrok|
     puts "Your kemal app is live!"
     puts "local: http://127.0.0.1:3400"
     puts "http:  #{ngrok.ngrok_url}"
-    puts "https: #{ngrok.ngrok_https_url}"
+    puts "https: #{ngrok.ngrok_url_https}"
   end
 end
