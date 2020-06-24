@@ -16,44 +16,30 @@ dependencies:
 
 ## Usage
 
+### Authenticate with Ngrok
+
 ```crystal
-require "ngrok"
-
-ngrok = Ngrok.start
-
-# ngrok address
-ngrok.addr
-# => "127.0.0.1:3001"
-
-# ngrok external url
-ngrok.ngrok_url
-# => "http://aaa0e65.ngrok.io"
-
-ngrok.ngrok_url_https
-# => "https://aaa0e65.ngrok.io"
-
-ngrok.running?
-# => true
-
-ngrok.stopped?
-# => false
-
-# ngrok process id
-ngrok.pid
-# => 27384
-
-# keep the connection alive
-sleep
+Ngrok.auth("your token")
 ```
 
+### Start an Ngrok Session
+
 ```crystal
-Ngrok.start(addr: 'foo.dev:80',
-            subdomain: 'MY_SUBDOMAIN',
-            hostname: 'MY_HOSTNAME',
-            authtoken: 'MY_TOKEN',
+Ngrok.start(addr: "127.0.0.1:3001",
+            subdomain: nil,
+            hostname: nil,
+            timeout: 10.seconds,
             inspect: false,
-            log: File.open("./log.txt", "w"),
-            config: '~/.ngrok')
+            region: "us",
+            config: nil,
+            use_local_executable: true,
+            ngrok_bin: "./bin") do |ngrok|
+  # `ngrok.url` contains the http url for this session
+  puts ngrok.url
+
+  # `ngrok.url_https` contains the https url for this session
+  puts ngrok.url_https
+end
 ```
 
 ## Usage Examples

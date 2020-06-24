@@ -42,7 +42,7 @@ class Ngrok
         tempfile = File.tempfile("ngrok-#{current_platform}", ".zip") do |file|
           file.puts response.body
         end
-        Zip::File.open(tempfile.path) do |zip|
+        Compress::Zip::File.open(tempfile.path) do |zip|
           zip.extract_all(@bin_path, 0x7777)
         end
         tempfile.delete

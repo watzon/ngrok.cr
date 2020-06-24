@@ -1,154 +1,166 @@
-require "./core_extensions/*"
+require "log"
+require "./extensions/*"
 require "./ngrok/*"
 
 class Ngrok
-  DEFAULTS = {
-    addr:                 "127.0.0.1:3001",
-    subdomain:            nil,
-    hostname:             nil,
-    authtoken:            nil,
-    timeout:              10,
-    inspect:              false,
-    log:                  IO::Memory.new,
-    config:               nil,
-    use_local_executable: true,
-    ngrok_bin:            "./bin",
-  }
-
-  @params : NamedTuple(
-    addr: String,
-    subdomain: String?,
-    hostname: String?,
-    authtoken: String?,
-    timeout: Int32,
-    inspect: Bool,
-    log: IO,
-    config: String?,
-    use_local_executable: Bool,
-    ngrok_bin: String)
+  Log = ::Log.for("ngrok")
 
   @process : Process? = nil
-  @ngrok_url : String? = nil
-  @ngrok_url_https : String? = nil
-  @status : Symbol = :stopped
 
-  getter :params, :ngrok_url, :ngrok_url_https, :status
+  @process_out : IO::Memory
 
-  protected setter :process, :ngrok_url, :ngrok_url_https, :status
+  getter addr : String
+  getter subdomain : String?
+  getter hostname : String?
+  getter timeout : Time::Span
+  getter inspect : Bool
+  getter region : String
+  getter config : String?
+  getter use_local_executable : Bool
+  getter ngrok_bin : String
 
-  def initialize(params = nil)
-    @params = params ? DEFAULTS.merge(params) : DEFAULTS
+  getter! url : String?
+  getter! url_https : String?
+
+  getter status : Status
+  private setter status
+
+  def initialize(@addr = "127.0.0.1:3001",
+                 @subdomain = nil,
+                 @hostname = nil,
+                 @timeout = 10.seconds,
+                 @inspect = false,
+                 @region = "us",
+                 @config = nil,
+                 @use_local_executable = true,
+                 @ngrok_bin = "./bin")
+    @status = :stopped
+    @process_out = IO::Memory.new
   end
 
-  def self.start(params = nil)
-    ngrok = new(params)
-    binary = ngrok.binary_path
-
-    if ngrok.stopped?
-      process = ngrok.process = Process.new(
-        command: binary,
-        args: ngrok.ngrok_exec_params,
-        output: ngrok.params[:log])
-    end
-
-    ngrok.status = :running
-    ngrok.fetch_urls
+  def self.start(**params)
+    ngrok = new(**params)
+    ngrok.start
     ngrok
   end
 
-  def self.start(params = nil, &block)
-    ngrok = self.start(params)
+  def self.start(**params, &block)
+    ngrok = self.start(**params)
     yield(ngrok)
+    ngrok
+  end
+
+  def self.auth(token, use_local_executable = true, bin_path = "./bin")
+    io = IO::Memory.new
+    proc = Process.run(
+      self.binary_path(use_local_executable, bin_path),
+      ["authtoken", token.to_s],
+      output: io,
+      error: io
+    )
+    Log.info { io.rewind.gets_to_end }
+  end
+
+  def start
+    if stopped? || !@process || !@process.not_nil!.exists?
+      @process = Process.new(
+        command: Ngrok.binary_path(@use_local_executable, @ngrok_bin),
+        args: ngrok_exec_params,
+        output: @process_out,
+        error: @process_out
+      )
+      fetch_urls
+    else
+      Log.warn { "Ngrok already running" }
+      @process
+    end
   end
 
   def stop
-    if running? && @process
-      @process.not_nil!.kill(Signal::KILL)
+    if running?
+      Log.info { "Stopping ngrok process" }
+      @process.try &.signal(Signal::KILL)
       @status = :stopped
     end
     @status
   end
 
   def running?
-    @status == :running
+    @status.running?
   end
 
   def stopped?
-    @status == :stopped
+    @status.stopped?
   end
 
-  def addr
-    @params[:addr]
-  end
-
-  def port
-    @params[:port]
-  end
-
-  def log
-    @params[:log]
-  end
-
-  def subdomain
-    @params[:subdomain]
-  end
-
-  def authtoken
-    @params[:authtoken]
+  def errored?
+    @status.errored?
   end
 
   def ngrok_exec_params
     exec_params = ["http", "-log=stdout", "-log-level=debug"]
-    exec_params << "-authtoken=#{@params[:authtoken]}" if @params[:authtoken]
-    exec_params << "-subdomain=#{@params[:subdomain]}" if @params[:subdomain]
-    exec_params << "-hostname=#{@params[:hostname]}" if @params[:hostname]
-    exec_params << "-inspect=#{@params[:inspect]}" if @params.has_key? :inspect
-    exec_params << "-config=#{@params[:config]} #{@params[:addr]}" if @params[:config]
-    exec_params << params[:addr] if !@params[:config]
+    exec_params << "-subdomain=#{@subdomain}" if @subdomain
+    exec_params << "-hostname=#{@hostname}" if @hostname
+    exec_params << "-inspect=#{@inspect}" if @inspect
+    exec_params << "-region=#{@region}"
+    exec_params << "-config=#{@config} #{@addr}" if @config
+    exec_params << @addr if !@config
     exec_params
   end
 
   def fetch_urls
-    @params[:timeout].times do
-      log_content = @params[:log].to_s
-      result = log_content.scan(/URL:(.+)\sProto:(http|https)\s/)
-      if !result.empty?
-        result = result.map { |r| r.captures.reverse }.to_h
-        @ngrok_url = result["http"]
-        @ngrok_url_https = result["https"]
-        return @ngrok_url if @ngrok_url
+    start_time = Time.monotonic
+    loop do
+      if Time.monotonic - 10.seconds > start_time
+        raise "Timeout: failed to fetch ngrok urls in time"
       end
 
-      error = log_content.scan(/msg="command failed" err="([^"]+)"/).flatten
-      unless error.empty?
+      log_content = @process_out.rewind.gets_to_end
+      http_url = log_content.match(/url=(http:\/\/.*)/)
+      https_url = log_content.match(/url=(https:\/\/.*)/)
+
+      if http_url && https_url
+        @url = http_url[1]
+        @url_https = https_url[1]
+        return
+      end
+
+      if error = log_content.match(/msg="command failed" err="(.*)"/)
         self.stop
-        raise error.first.to_s
+        self.status = Status::Errored
+        raise error[1].gsub(/(\\r)?\\n/, '\n')
       end
 
-      sleep 1
-      @params[:log].rewind
+      sleep 100.milliseconds
     end
-    raise "Unable to fetch external url"
-
-    @ngrok_url
   end
 
-  def binary_path
-    if params[:use_local_executable]
+  def self.binary_path(use_local_executable = true, bin_dir = "./bin")
+    if use_local_executable
       exe = Process.find_executable("ngrok")
       if exe
         exe
       else
-        download_ngrok(params[:ngrok_bin])
+        self.download_ngrok(bin_dir)
       end
     else
-      download_ngrok(params[:ngrok_bin])
+      self.download_ngrok(bin_dir)
     end
   end
 
-  private def download_ngrok(bin_path)
+  def self.download_ngrok(bin_path)
     downloader = Downloader.new(bin_path: bin_path)
     downloader.download!
     downloader.binary_path
+  end
+
+  def finalize
+    stop
+  end
+
+  enum Status
+    Stopped
+    Running
+    Errored
   end
 end

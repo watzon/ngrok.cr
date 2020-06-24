@@ -12,11 +12,11 @@ ws "/socket" do |socket|
   socket.send "Hello from Kemal!"
 end
 
-Ngrok.start({addr: "127.0.0.1:3400"}) do |ngrok|
+Ngrok.start(addr: "127.0.0.1:3400") do |ngrok|
   Kemal.run(3400) do
     puts "Your kemal app is live!"
     puts "local: http://127.0.0.1:3400"
-    puts "http:  #{ngrok.ngrok_url}"
-    puts "https: #{ngrok.ngrok_url_https}"
+    puts "http:  #{ngrok.url}"
+    puts "https: #{ngrok.url_https}"
   end
 end

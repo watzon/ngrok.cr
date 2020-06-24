@@ -1,7 +1,6 @@
-require "file_utils"
-require "zip"
+require "compress/zip"
 
-class Zip::File
+class Compress::Zip::File
   def extract(entry, dest_path = Dir.current, perms = nil)
     if entry.is_a?(String)
       entry = self.[entry]
@@ -26,13 +25,13 @@ class Zip::File
 
   private def create_directory(dest_path)
     unless ::File.directory?(dest_path)
-      ::FileUtils.mkdir_p(dest_path)
+      ::Dir.mkdir_p(dest_path)
     end
   end
 
   private def create_file(entry, dest_path, perms = nil)
     if ::File.exists?(dest_path)
-      raise Error.new("File #{dest_path} already exists")
+      raise "File #{dest_path} already exists"
     end
     entry.open { |io| ::File.write(dest_path, io, perms) }
   end
