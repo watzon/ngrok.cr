@@ -22,8 +22,9 @@ class Ngrok
     end
 
     def binary_path
+      puts current_platform
       ext = case current_platform
-            when .includes?("win")
+            when .starts_with?("win")
               ".exe"
             else
               ""
@@ -59,25 +60,25 @@ class Ngrok
 
     private def current_platform
       {% if flag?(:linux) && flag?(:arm) %}
-        {% if flag?(:i686) %}
+        {% if flag?(:i686) || flag?(:x86_64) %}
           "linuxarm64"
         {% else %}
           "linuxarm"
         {% end %}
       {% elsif flag?(:linux) %}
-        {% if flag?(:i686) %}
+        {% if flag?(:i686) || flag?(:x86_64) %}
           "linuxx64"
         {% else %}
           "linuxia32"
         {% end %}
       {% elsif flag?(:darwin) %}
-        {% if flag?(:i686) %}
+        {% if flag?(:i686) || flag?(:x86_64) %}
           "darwinx64"
         {% else %}
           "darwinia32"
         {% end %}
       {% elsif flag?(:freebsd) %}
-        {% if flag?(:i686) %}
+        {% if flag?(:i686) || flag?(:x86_64) %}
           "freebsdx64"
         {% else %}
           "freebsdia32"
