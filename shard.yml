@@ -1,9 +1,9 @@
 name: ngrok
-version: 0.3.0
+version: 0.3.1
 
 authors:
   - Chris Watson <chris@watzon.tech>
 
-crystal: 0.34.0
+crystal: "=> 0.36.0"
 
 license: MIT
