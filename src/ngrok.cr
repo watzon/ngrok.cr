@@ -98,12 +98,12 @@ class Ngrok
   end
 
   def ngrok_exec_params
-    exec_params = ["http", "-log=stdout", "-log-level=debug"]
-    exec_params << "-subdomain=#{@subdomain}" if @subdomain
-    exec_params << "-hostname=#{@hostname}" if @hostname
-    exec_params << "-inspect=#{@inspect}" if @inspect
-    exec_params << "-region=#{@region}"
-    exec_params << "-config=#{@config} #{@addr}" if @config
+    exec_params = ["http", "--log=stdout", "--log-level=debug"]
+    exec_params << "--subdomain=#{@subdomain}" if @subdomain
+    exec_params << "--hostname=#{@hostname}" if @hostname
+    exec_params << "--inspect=#{@inspect}" if @inspect
+    exec_params << "--region=#{@region}"
+    exec_params << "--config=#{@config} #{@addr}" if @config
     exec_params << @addr if !@config
     exec_params
   end
@@ -149,6 +149,7 @@ class Ngrok
   end
 
   def self.download_ngrok(bin_path)
+    puts "Downloading ngrok..."
     downloader = Downloader.new(bin_path: bin_path)
     downloader.download!
     downloader.binary_path
